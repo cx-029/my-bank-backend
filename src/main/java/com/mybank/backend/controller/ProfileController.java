@@ -2,7 +2,10 @@ package com.mybank.backend.controller;
 
 import com.mybank.backend.entity.Customer;
 import com.mybank.backend.service.CustomerService;
+import com.mybank.backend.service.FaceRecognitionService;
+import com.mybank.backend.util.IdNumberUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -13,6 +16,9 @@ import java.util.Optional;
 public class ProfileController {
     @Autowired
     private CustomerService customerService;
+
+    @Autowired
+    private FaceRecognitionService faceRecognitionService;
 
     @GetMapping
     public CustomerDTO getProfile(Principal principal) {
@@ -39,12 +45,37 @@ public class ProfileController {
             origin.setEmail(dto.email);
             origin.setPhotoUrl(dto.photoUrl);
             if (dto.idNumber != null && !dto.idNumber.isEmpty()) {
-                origin.setIdNumber(CustomerService.encryptIdNumber(dto.idNumber));
+                origin.setIdNumber(IdNumberUtil.encryptIdNumber(dto.idNumber));
             }
             customerService.saveCustomer(origin);
             return CustomerDTO.from(origin);
         }
         return null;
+    }
+
+    /**
+     * 人脸识别后返回真实身份证号接口
+     * 前端传base64人脸图片，识别通过且user_id==当前用户则返回真实身份证号
+     */
+    @PostMapping("/id-number")
+    public ResponseEntity<?> getIdNumberAfterFace(@RequestBody FaceDTO dto, Principal principal) {
+        // 人脸识别服务，返回user_id
+        String recognizedUser = faceRecognitionService.recognize(dto.base64Image);
+        String loginName = principal.getName();
+        if (recognizedUser != null && recognizedUser.equals(loginName)) {
+            Optional<Customer> customerOpt = customerService.getCustomerByName(loginName);
+            if (customerOpt.isPresent()) {
+                String idNumber = IdNumberUtil.decryptIdNumber(customerOpt.get().getIdNumber());
+                return ResponseEntity.ok(idNumber); // 返回真实身份证号
+            }
+            return ResponseEntity.status(404).body("用户不存在");
+        }
+        return ResponseEntity.status(403).body("人脸识别失败或不匹配");
+    }
+
+    // DTO用于接收前端base64人脸图片
+    public static class FaceDTO {
+        public String base64Image;
     }
 
     // DTO用于安全数据交换
@@ -64,7 +95,7 @@ public class ProfileController {
             dto.id = c.getId();
             dto.name = c.getName();
             dto.gender = c.getGender();
-            dto.idNumber = maskIdNumber(CustomerService.decryptIdNumber(c.getIdNumber()));
+            dto.idNumber = maskIdNumber(IdNumberUtil.decryptIdNumber(c.getIdNumber()));
             dto.birthday = c.getBirthday();
             dto.address = c.getAddress();
             dto.phone = c.getPhone();
@@ -76,7 +107,7 @@ public class ProfileController {
         // 脱敏身份证号
         private static String maskIdNumber(String id) {
             if (id == null || id.length() < 8) return "********";
-            return id.substring(0,3) + "***********" + id.substring(id.length()-3);
+            return id.substring(0, 3) + "***********" + id.substring(id.length() - 3);
         }
     }
 }
