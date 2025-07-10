@@ -1,9 +1,12 @@
 package com.mybank.backend.controller;
 
+<<<<<<< HEAD
 import com.mybank.backend.entity.Customer;
 import com.mybank.backend.repository.CustomerRepository;
 import com.mybank.backend.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
+=======
+>>>>>>> bbb1d15 (Initial commit)
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -17,9 +20,12 @@ import java.util.*;
 @RequestMapping("/api")
 public class HomeController {
 
+<<<<<<< HEAD
     @Autowired
     private CustomerService customerService;
 
+=======
+>>>>>>> bbb1d15 (Initial commit)
     @GetMapping("/home")
     public Map<String, Object> getHomePage() {
         Map<String, Object> res = new HashMap<>();
@@ -27,6 +33,7 @@ public class HomeController {
         // 获取当前登录用户信息
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String username = auth.getName();
+<<<<<<< HEAD
 
         // 查数据库，获取真实用户头像
         Optional<Customer> customerOpt = customerService.getCustomerByName(username);
@@ -36,6 +43,9 @@ public class HomeController {
         } else {
             avatar = "https://api.dicebear.com/7.x/identicon/svg?seed=" + username;
         }
+=======
+        String avatar = "https://api.dicebear.com/7.x/identicon/svg?seed=" + username;
+>>>>>>> bbb1d15 (Initial commit)
 
         // 当前日期和时间
         LocalDate nowDate = LocalDate.now();
