@@ -1,0 +1,45 @@
+package com.mybank.backend.service.impl;
+
+import com.mybank.backend.entity.User;
+import com.mybank.backend.repository.UserRepository;
+import com.mybank.backend.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+
+@Service
+public class UserServiceImpl implements UserService {
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Override
+    public String register(User user) {
+        // 必填校验
+        if (!StringUtils.hasText(user.getUsername()) ||
+                !StringUtils.hasText(user.getPassword()) ||
+                !StringUtils.hasText(user.getRealName()) ||
+                !StringUtils.hasText(user.getEmail()) ||
+                !StringUtils.hasText(user.getPhone())) {
+            return "请填写所有必填项";
+        }
+
+        if (userRepository.findByUsername(user.getUsername()).isPresent()) {
+            return "用户名已存在";
+        }
+        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
+            return "邮箱已注册";
+        }
+        if (userRepository.findByPhone(user.getPhone()).isPresent()) {
+            return "手机号已注册";
+        }
+        // 密码加密
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        // 默认角色
+        if (user.getRole() == null) user.setRole("customer");
+        userRepository.save(user);
+        return "success";
+    }
+}
