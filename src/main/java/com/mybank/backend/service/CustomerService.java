@@ -1,30 +1,18 @@
 package com.mybank.backend.service;
 
 import com.mybank.backend.entity.Customer;
-import com.mybank.backend.repository.CustomerRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+
 import java.util.List;
 import java.util.Optional;
 
-@Service
-public class CustomerService {
-    @Autowired
-    private CustomerRepository customerRepository;
+public interface CustomerService {
+    List<Customer> getAllCustomers();
 
-    public List<Customer> getAllCustomers() {
-        return customerRepository.findAll();
-    }
+    Optional<Customer> getCustomerById(Long id);
 
-    public Optional<Customer> getCustomerById(Long id) {
-        return customerRepository.findById(id);
-    }
+    Optional<Customer> getCustomerByName(String name);
 
-    public Customer saveCustomer(Customer customer) {
-        return customerRepository.save(customer);
-    }
+    Customer saveCustomer(Customer customer);
 
-    public void deleteCustomer(Long id) {
-        customerRepository.deleteById(id);
-    }
+    void deleteCustomer(Long id);
 }
