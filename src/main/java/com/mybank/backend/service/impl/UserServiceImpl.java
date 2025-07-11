@@ -1,7 +1,10 @@
 package com.mybank.backend.service.impl;
 
+import com.mybank.backend.entity.Customer;
 import com.mybank.backend.entity.User;
+import com.mybank.backend.repository.CustomerRepository;
 import com.mybank.backend.repository.UserRepository;
+import com.mybank.backend.service.CustomerService;
 import com.mybank.backend.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -14,6 +17,8 @@ public class UserServiceImpl implements UserService {
     private UserRepository userRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private CustomerService customerService;
 
     @Override
     public String register(User user) {
@@ -38,8 +43,21 @@ public class UserServiceImpl implements UserService {
         // 密码加密
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         // 默认角色
+
         if (user.getRole() == null) user.setRole("customer");
-        userRepository.save(user);
+        // 保存用户，并接收返回值
+        User savedUser = userRepository.save(user);
+
+        if ("customer".equals(savedUser.getRole())) {
+            Customer customer = new Customer();
+            customer.setUserId(savedUser.getId());        // 关键：外键关联
+            customer.setName(savedUser.getUsername());    // 可用realName
+            customer.setPhone(savedUser.getPhone());
+            customer.setEmail(savedUser.getEmail());
+            // 其它字段为空，后续完善
+            customerService.saveCustomer(customer);
+            userRepository.save(user);
+        }
         return "success";
     }
 }
