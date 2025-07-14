@@ -42,12 +42,8 @@ public class SecurityConfig {
                                 "/api/auth/**",
                                 "/api/users/login",
                                 "/api/users/register",
-<<<<<<< HEAD
                                 "/api/users/face-login",
                                 "/avatar/**"
-=======
-                                "/api/users/face-login"
->>>>>>> bbb1d15 (Initial commit)
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

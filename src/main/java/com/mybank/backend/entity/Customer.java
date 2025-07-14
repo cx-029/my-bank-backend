@@ -17,7 +17,6 @@ public class Customer {
     private String phone;
     private String email;
     private String photoUrl;
-<<<<<<< HEAD
     private Long userId;
 
     // Getter 和 Setter
@@ -29,18 +28,10 @@ public class Customer {
         return id;
     }
 
-=======
-
-    // Getter 和 Setter
-    public Long getId() {
-        return id;
-    }
->>>>>>> bbb1d15 (Initial commit)
     public void setId(Long id) {
         this.id = id;
     }
 
-<<<<<<< HEAD
     public String getName() {
         return name;
     }
@@ -104,7 +95,4 @@ public class Customer {
     public void setPhotoUrl(String photoUrl) {
         this.photoUrl = photoUrl;
     }
-=======
-    // 其他字段的 getter/setter 省略
->>>>>>> bbb1d15 (Initial commit)
 }

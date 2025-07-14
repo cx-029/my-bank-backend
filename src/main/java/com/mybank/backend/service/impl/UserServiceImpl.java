@@ -1,15 +1,10 @@
 package com.mybank.backend.service.impl;
 
-<<<<<<< HEAD
 import com.mybank.backend.entity.Customer;
 import com.mybank.backend.entity.User;
 import com.mybank.backend.repository.CustomerRepository;
 import com.mybank.backend.repository.UserRepository;
 import com.mybank.backend.service.CustomerService;
-=======
-import com.mybank.backend.entity.User;
-import com.mybank.backend.repository.UserRepository;
->>>>>>> bbb1d15 (Initial commit)
 import com.mybank.backend.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,11 +17,8 @@ public class UserServiceImpl implements UserService {
     private UserRepository userRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
-<<<<<<< HEAD
     @Autowired
     private CustomerService customerService;
-=======
->>>>>>> bbb1d15 (Initial commit)
 
     @Override
     public String register(User user) {
@@ -51,7 +43,6 @@ public class UserServiceImpl implements UserService {
         // 密码加密
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         // 默认角色
-<<<<<<< HEAD
 
         if (user.getRole() == null) user.setRole("customer");
         // 保存用户，并接收返回值
@@ -67,10 +58,6 @@ public class UserServiceImpl implements UserService {
             customerService.saveCustomer(customer);
             userRepository.save(user);
         }
-=======
-        if (user.getRole() == null) user.setRole("customer");
-        userRepository.save(user);
->>>>>>> bbb1d15 (Initial commit)
         return "success";
     }
 }
