@@ -9,8 +9,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.Map;
 import java.util.Optional;
 
+/**
+ * 身份证加密存储，不用DTO，直接用Customer实体
+ * 增加日志，排查人脸识别接口解密身份证号末位错误问题
+ */
 @RestController
 @RequestMapping("/api/profile")
 public class ProfileController {
@@ -21,34 +26,44 @@ public class ProfileController {
     private FaceRecognitionService faceRecognitionService;
 
     @GetMapping
-    public CustomerDTO getProfile(Principal principal) {
+    public Customer getProfile(Principal principal) {
         String realName = principal.getName();
         Optional<Customer> customerOpt = customerService.getCustomerByName(realName);
         if (customerOpt.isPresent()) {
             Customer customer = customerOpt.get();
-            return CustomerDTO.from(customer);
+            // 解密身份证号，前端展示时用全*号
+            String decryptedId = IdNumberUtil.decryptIdNumber(customer.getIdNumber());
+            customer.setIdNumber(maskIdNumber(decryptedId));
+            return customer;
         }
         return null;
     }
 
     @PutMapping
-    public CustomerDTO updateProfile(Principal principal, @RequestBody CustomerDTO dto) {
+    public Customer updateProfile(Principal principal, @RequestBody Customer customerReq) {
         String realName = principal.getName();
         Optional<Customer> dbCustomer = customerService.getCustomerByName(realName);
 
         if (dbCustomer.isPresent()) {
             Customer origin = dbCustomer.get();
-            origin.setGender(dto.gender);
-            origin.setBirthday(dto.birthday);
-            origin.setAddress(dto.address);
-            origin.setPhone(dto.phone);
-            origin.setEmail(dto.email);
-            origin.setPhotoUrl(dto.photoUrl);
-            if (dto.idNumber != null && !dto.idNumber.isEmpty()) {
-                origin.setIdNumber(IdNumberUtil.encryptIdNumber(dto.idNumber));
+            origin.setGender(customerReq.getGender());
+            origin.setBirthday(customerReq.getBirthday());
+            origin.setAddress(customerReq.getAddress());
+            origin.setPhone(customerReq.getPhone());
+            origin.setEmail(customerReq.getEmail());
+            origin.setPhotoUrl(customerReq.getPhotoUrl());
+            // 仅当前端提交了新身份证号才加密更新
+            if (customerReq.getIdNumber() != null && !customerReq.getIdNumber().isEmpty()
+                    && !isAllStars(customerReq.getIdNumber())) {
+                String encrypted = IdNumberUtil.encryptIdNumber(customerReq.getIdNumber());
+                origin.setIdNumber(encrypted);
             }
             customerService.saveCustomer(origin);
-            return CustomerDTO.from(origin);
+
+            // 返回时只展示全*号
+            String decryptedId = IdNumberUtil.decryptIdNumber(origin.getIdNumber());
+            origin.setIdNumber(maskIdNumber(decryptedId));
+            return origin;
         }
         return null;
     }
@@ -59,14 +74,15 @@ public class ProfileController {
      */
     @PostMapping("/id-number")
     public ResponseEntity<?> getIdNumberAfterFace(@RequestBody FaceDTO dto, Principal principal) {
-        // 人脸识别服务，返回user_id
         String recognizedUser = faceRecognitionService.recognize(dto.base64Image);
         String loginName = principal.getName();
         if (recognizedUser != null && recognizedUser.equals(loginName)) {
             Optional<Customer> customerOpt = customerService.getCustomerByName(loginName);
             if (customerOpt.isPresent()) {
-                String idNumber = IdNumberUtil.decryptIdNumber(customerOpt.get().getIdNumber());
-                return ResponseEntity.ok(idNumber); // 返回真实身份证号
+                String encryptedId = customerOpt.get().getIdNumber();
+                String idNumber = IdNumberUtil.decryptIdNumber(encryptedId);
+                // 后端
+                return ResponseEntity.ok(Map.of("idNumber", idNumber));
             }
             return ResponseEntity.status(404).body("用户不存在");
         }
@@ -78,36 +94,14 @@ public class ProfileController {
         public String base64Image;
     }
 
-    // DTO用于安全数据交换
-    public static class CustomerDTO {
-        public Long id;
-        public String name;
-        public String gender;
-        public String idNumber; // 脱敏返回，提交时明文
-        public java.util.Date birthday;
-        public String address;
-        public String phone;
-        public String email;
-        public String photoUrl;
+    // 全*号遮掩
+    private static String maskIdNumber(String id) {
+        if (id == null || id.isEmpty()) return "******************";
+        return "*".repeat(id.length());
+    }
 
-        public static CustomerDTO from(Customer c) {
-            CustomerDTO dto = new CustomerDTO();
-            dto.id = c.getId();
-            dto.name = c.getName();
-            dto.gender = c.getGender();
-            dto.idNumber = maskIdNumber(IdNumberUtil.decryptIdNumber(c.getIdNumber()));
-            dto.birthday = c.getBirthday();
-            dto.address = c.getAddress();
-            dto.phone = c.getPhone();
-            dto.email = c.getEmail();
-            dto.photoUrl = c.getPhotoUrl();
-            return dto;
-        }
-
-        // 脱敏身份证号
-        private static String maskIdNumber(String id) {
-            if (id == null || id.length() < 8) return "********";
-            return id.substring(0, 3) + "***********" + id.substring(id.length() - 3);
-        }
+    // 判断前端是否提交的是全星号（前端未修改身份证号时会提交全*号）
+    private static boolean isAllStars(String id) {
+        return id != null && !id.isEmpty() && id.chars().allMatch(ch -> ch == '*');
     }
 }
