@@ -42,7 +42,8 @@ public class SecurityConfig {
                                 "/api/auth/**",
                                 "/api/users/login",
                                 "/api/users/register",
-                                "/api/users/face-login"
+                                "/api/users/face-login",
+                                "/avatar/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
