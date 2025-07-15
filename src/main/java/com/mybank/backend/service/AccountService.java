@@ -17,4 +17,7 @@ public interface AccountService {
     boolean transfer(Long fromAccountId, Long toAccountId, Double amount, String description);
 
     List<Transaction> getTransactionHistory(Long accountId);
+
+    // 新增：直接用人脸图片识别用户（返回用户名或userId）
+    String recognizeFace(String faceImage);
 }

@@ -158,4 +158,10 @@ public class AccountServiceImpl implements AccountService {
     public List<Transaction> getTransactionHistory(Long accountId) {
         return transactionRepository.findByAccountIdOrderByTransactionTimeDesc(accountId);
     }
+
+    // 新增：直接用人脸图片识别用户（返回用户名或userId）
+    @Override
+    public String recognizeFace(String faceImage) {
+        return faceRecognitionService.recognize(faceImage);
+    }
 }

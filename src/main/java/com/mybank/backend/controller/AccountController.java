@@ -3,10 +3,12 @@ package com.mybank.backend.controller;
 import com.mybank.backend.entity.Account;
 import com.mybank.backend.entity.Transaction;
 import com.mybank.backend.service.AccountService;
+import com.mybank.backend.service.FaceRecognitionService;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.security.Principal;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -16,6 +18,9 @@ public class AccountController {
 
     @Autowired
     private AccountService accountService;
+
+    @Autowired
+    private FaceRecognitionService faceRecognitionService;
 
     // 查看自己的账户基本信息
     @GetMapping
@@ -55,6 +60,22 @@ public class AccountController {
         String type = payload.getOrDefault("type", "活期存款").toString();
         String description = payload.getOrDefault("description", "用户存款").toString();
         return accountService.deposit(account.getId(), amount, type, description);
+    }
+
+    // 存取管理前人脸识别校验接口（直接用FaceRecognitionService）
+    @PostMapping("/face-verify")
+    public Map<String, Object> faceVerify(@RequestBody Map<String, String> payload) {
+        String base64Image = payload.get("image");
+        String recognizedUser = faceRecognitionService.recognize(base64Image);
+        Map<String, Object> result = new HashMap<>();
+        if (recognizedUser != null) {
+            result.put("success", true);
+            result.put("username", recognizedUser); // 可返回userId或username
+        } else {
+            result.put("success", false);
+            result.put("error", "人脸识别失败");
+        }
+        return result;
     }
 
     // 取款
