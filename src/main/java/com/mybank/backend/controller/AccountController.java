@@ -1,11 +1,13 @@
 package com.mybank.backend.controller;
 
 import com.mybank.backend.entity.Account;
+import com.mybank.backend.entity.Transaction;
 import com.mybank.backend.service.AccountService;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.security.Principal;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -41,5 +43,49 @@ public class AccountController {
             return accountService.getDecryptedAccountNumber(accountId);
         }
         throw new RuntimeException("人脸识别失败");
+    }
+
+    // 存款
+    @PostMapping("/deposit")
+    public boolean deposit(Principal principal, @RequestBody Map<String, Object> payload) {
+        String username = principal.getName();
+        Account account = accountService.getAccountByUsername(username);
+        if (account == null) throw new RuntimeException("未找到账户信息");
+        Double amount = Double.valueOf(payload.get("amount").toString());
+        String type = payload.getOrDefault("type", "活期存款").toString();
+        String description = payload.getOrDefault("description", "用户存款").toString();
+        return accountService.deposit(account.getId(), amount, type, description);
+    }
+
+    // 取款
+    @PostMapping("/withdraw")
+    public boolean withdraw(Principal principal, @RequestBody Map<String, Object> payload) {
+        String username = principal.getName();
+        Account account = accountService.getAccountByUsername(username);
+        if (account == null) throw new RuntimeException("未找到账户信息");
+        Double amount = Double.valueOf(payload.get("amount").toString());
+        String description = payload.getOrDefault("description", "用户取款").toString();
+        return accountService.withdraw(account.getId(), amount, description);
+    }
+
+    // 转账
+    @PostMapping("/transfer")
+    public boolean transfer(Principal principal, @RequestBody Map<String, Object> payload) {
+        String username = principal.getName();
+        Account fromAccount = accountService.getAccountByUsername(username);
+        if (fromAccount == null) throw new RuntimeException("未找到账户信息");
+        Long toAccountId = Long.valueOf(payload.get("toAccountId").toString());
+        Double amount = Double.valueOf(payload.get("amount").toString());
+        String description = payload.getOrDefault("description", "账户转账").toString();
+        return accountService.transfer(fromAccount.getId(), toAccountId, amount, description);
+    }
+
+    // 查询自己的交易记录
+    @GetMapping("/transactions")
+    public List<Transaction> getTransactions(Principal principal) {
+        String username = principal.getName();
+        Account account = accountService.getAccountByUsername(username);
+        if (account == null) throw new RuntimeException("未找到账户信息");
+        return accountService.getTransactionHistory(account.getId());
     }
 }
