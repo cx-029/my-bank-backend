@@ -49,6 +49,16 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
+    public boolean unlikeNotification(Long notificationId, Long userId) {
+        NotificationLike like = likeRepository.findByNotificationIdAndUserId(notificationId, userId);
+        if (like != null) {
+            likeRepository.delete(like);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
     public int getLikeCount(Long notificationId) {
         return likeRepository.countByNotificationId(notificationId);
     }

@@ -13,4 +13,5 @@ public interface NotificationService {
     int getLikeCount(Long notificationId);
     boolean likeNotification(Long notificationId, Long userId);
     boolean hasUserLiked(Long notificationId, Long userId);
+    boolean unlikeNotification(Long notificationId, Long userId);
 }

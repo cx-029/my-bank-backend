@@ -28,6 +28,20 @@ public class NotificationController {
         return notificationService.getAllNotifications();
     }
 
+    // 获取通知点赞数
+    @GetMapping("/{id}/likes")
+    public int getLikeCount(@PathVariable Long id) {
+        return notificationService.getLikeCount(id);
+    }
+
+    // 取消点赞
+    @DeleteMapping("/{id}/likes")
+    public boolean unlikeNotification(@PathVariable Long id, Principal principal) {
+        User user = userService.findByUsername(principal.getName());
+        if (user == null) return false;
+        return notificationService.unlikeNotification(id, user.getId());
+    }
+
     // 获取通知详情
     @GetMapping("/{id}")
     public Notification getNotification(@PathVariable Long id) {
