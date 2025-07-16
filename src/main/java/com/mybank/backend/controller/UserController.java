@@ -14,6 +14,18 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    @GetMapping("/me")
+    public User getCurrentUser(java.security.Principal principal) {
+        if (principal == null) {
+            return null;
+        }
+        User user = userService.findByUsername(principal.getName());
+        if (user != null) {
+            user.setPassword(null); // 防止泄漏密码
+        }
+        return user;
+    }
+
     @PostMapping("/register")
     public Map<String, Object> register(@RequestBody User user) {
         String result = userService.register(user);
