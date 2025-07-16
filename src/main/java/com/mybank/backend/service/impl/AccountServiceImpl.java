@@ -159,6 +159,12 @@ public class AccountServiceImpl implements AccountService {
         return transactionRepository.findByAccountIdOrderByTransactionTimeDesc(accountId);
     }
 
+    @Override
+    public Account getAccountByCustomerId(Long customerId) {
+        // 假设每个客户只有一个主账户，如果有多个账户可自行调整为返回List<Account>
+        return accountRepository.findByCustomerId(customerId).orElse(null);
+    }
+
     // 新增：直接用人脸图片识别用户（返回用户名或userId）
     @Override
     public String recognizeFace(String faceImage) {

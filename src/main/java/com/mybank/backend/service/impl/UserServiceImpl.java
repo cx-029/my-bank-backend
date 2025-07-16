@@ -21,6 +21,11 @@ public class UserServiceImpl implements UserService {
     private CustomerService customerService;
 
     @Override
+
+    public User findByUsername(String username) {
+        return userRepository.findByUsername(username).orElse(null);
+    }
+
     public String register(User user) {
         // 必填校验
         if (!StringUtils.hasText(user.getUsername()) ||

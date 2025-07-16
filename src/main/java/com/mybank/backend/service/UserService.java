@@ -6,5 +6,6 @@ public interface UserService {
     /**
      * @return 注册成功返回"success"，否则返回错误信息
      */
+    User findByUsername(String username);
     String register(User user);
 }

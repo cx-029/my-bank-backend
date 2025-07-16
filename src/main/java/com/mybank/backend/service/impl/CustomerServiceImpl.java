@@ -29,6 +29,11 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
+    public Optional<Customer> getCustomerByUserId(Long userId) {
+        return customerRepository.findByUserId(userId);
+    }
+
+    @Override
     public Optional<Customer> getCustomerByName(String name) {
         return customerRepository.findByName(name);
     }

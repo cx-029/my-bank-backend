@@ -18,5 +18,7 @@ public interface CustomerService {
 
     Customer saveCustomer(Customer customer);
 
+    Optional<Customer> getCustomerByUserId(Long userId);
+
     void deleteCustomer(Long id);
 }

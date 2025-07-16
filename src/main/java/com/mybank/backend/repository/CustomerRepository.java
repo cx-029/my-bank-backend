@@ -8,4 +8,5 @@ import java.util.Optional;
 public interface CustomerRepository extends JpaRepository<Customer, Long> {
     // 可自定义扩展方法
     Optional<Customer> findByName(String name);
+    Optional<Customer> findByUserId(Long userId);
 }

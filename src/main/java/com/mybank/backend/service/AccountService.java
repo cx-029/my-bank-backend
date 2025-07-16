@@ -6,6 +6,7 @@ import com.mybank.backend.entity.Transaction;
 import java.util.List;
 
 public interface AccountService {
+    Account getAccountByCustomerId(Long customerId);
     Account getAccountByUsername(String username);
     Account updateAccountByUsername(String username, Account account);
     boolean verifyFace(String username, String faceImage);
