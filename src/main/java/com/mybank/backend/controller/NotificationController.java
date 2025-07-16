@@ -3,9 +3,12 @@ package com.mybank.backend.controller;
 import com.mybank.backend.entity.Notification;
 import com.mybank.backend.entity.NotificationComment;
 import com.mybank.backend.service.NotificationService;
+import com.mybank.backend.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import com.mybank.backend.entity.User;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.Map;
 
@@ -15,6 +18,9 @@ public class NotificationController {
 
     @Autowired
     private NotificationService notificationService;
+
+    @Autowired
+    private UserService userService; // 新增依赖，用于通过用户名查ID
 
     // 获取通知列表
     @GetMapping
@@ -34,30 +40,28 @@ public class NotificationController {
         return notificationService.getComments(id);
     }
 
-    // 新增评论
+    // 新增评论，userId 由后端判定
     @PostMapping("/{id}/comments")
-    public void addComment(@PathVariable Long id, @RequestBody Map<String, Object> body) {
-        Long userId = Long.valueOf(body.get("userId").toString());
+    public void addComment(@PathVariable Long id, @RequestBody Map<String, Object> body, Principal principal) {
+        User user = userService.findByUsername(principal.getName());
+        Long userId = user != null ? user.getId() : null;
         String comment = body.get("comment").toString();
         notificationService.addComment(id, userId, comment);
     }
 
-    // 获取点赞数
-    @GetMapping("/{id}/likes")
-    public int getLikeCount(@PathVariable Long id) {
-        return notificationService.getLikeCount(id);
-    }
-
-    // 用户点赞
+    // 用户点赞，userId 由后端判定
     @PostMapping("/{id}/likes")
-    public boolean likeNotification(@PathVariable Long id, @RequestBody Map<String, Object> body) {
-        Long userId = Long.valueOf(body.get("userId").toString());
+    public boolean likeNotification(@PathVariable Long id, Principal principal) {
+        User user = userService.findByUsername(principal.getName());
+        Long userId = user != null ? user.getId() : null;
         return notificationService.likeNotification(id, userId);
     }
 
-    // 查询用户是否点赞
-    @GetMapping("/{id}/likes/{userId}")
-    public boolean hasUserLiked(@PathVariable Long id, @PathVariable Long userId) {
+    // 查询用户是否点赞，userId 由后端判定
+    @GetMapping("/{id}/likes/me")
+    public boolean hasUserLiked(@PathVariable Long id, Principal principal) {
+        User user = userService.findByUsername(principal.getName());
+        Long userId = user != null ? user.getId() : null;
         return notificationService.hasUserLiked(id, userId);
     }
 }
