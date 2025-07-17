@@ -11,9 +11,13 @@ import com.mybank.backend.repository.NotificationRepository;
 import com.mybank.backend.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service
 public class NotificationServiceImpl implements NotificationService {
@@ -150,5 +154,38 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public void addComment(Long notificationId, Long userId, String comment) {
         addComment(notificationId, userId, comment, null);
+    }
+    @Override
+    public Page<Notification> getNotificationsPaged(Pageable pageable) {
+        return notificationRepository.findAll(pageable);
+    }
+
+    @Override
+    public Notification saveNotification(Notification notification) {
+        return notificationRepository.save(notification);
+    }
+
+    @Override
+    public Notification updateNotification(Notification notification) {
+        Notification old = notificationRepository.findById(notification.getId()).orElse(null);
+        if (old == null) return null;
+        old.setTitle(notification.getTitle());
+        old.setContent(notification.getContent());
+        old.setImageUrl(notification.getImageUrl());
+        // 可加其他字段更新
+        return notificationRepository.save(old);
+    }
+
+    @Override
+    @Transactional
+    public boolean deleteNotification(Long id) {
+        if (!notificationRepository.existsById(id)) return false;
+        // 先删除评论
+        commentRepository.deleteByNotificationId(id);
+        // 先删除点赞
+        likeRepository.deleteByNotificationId(id);
+        // 最后删除通知
+        notificationRepository.deleteById(id);
+        return true;
     }
 }
