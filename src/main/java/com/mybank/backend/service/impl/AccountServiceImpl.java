@@ -10,43 +10,70 @@ import com.mybank.backend.service.AccountService;
 import com.mybank.backend.service.FaceRecognitionService;
 import com.mybank.backend.util.IdNumberUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.*;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import jakarta.persistence.criteria.Predicate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class AccountServiceImpl implements AccountService {
 
     @Autowired
     private AccountRepository accountRepository;
-
     @Autowired
     private CustomerRepository customerRepository;
-
     @Autowired
     private TransactionRepository transactionRepository;
-
     @Autowired
     private FaceRecognitionService faceRecognitionService;
+
+    // 分页+多条件查询
+    @Override
+    public Page<Account> queryAccounts(Long id, Long customerId, String accountType, int page, int size) {
+        Specification<Account> spec = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            if (id != null) {
+                predicates.add(cb.equal(root.get("id"), id));
+            }
+            if (customerId != null) {
+                predicates.add(cb.equal(root.get("customerId"), customerId));
+            }
+            if (accountType != null && !accountType.isEmpty()) {
+                predicates.add(cb.equal(root.get("accountType"), accountType));
+            }
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "id"));
+        return accountRepository.findAll(spec, pageable);
+    }
 
     @Override
     public List<Account> getAllAccounts() {
         return accountRepository.findAll();
     }
 
-    // 新增账户
+    @Override
+    public Account getAccountById(Long id) {
+        return accountRepository.findById(id).orElse(null);
+    }
+
     @Override
     public Account addAccount(Account account) {
-        // 加密银行卡号
         if (account.getAccountNumber() != null && !account.getAccountNumber().isEmpty()) {
             account.setEncryptedAccountNumber(IdNumberUtil.encryptIdNumber(account.getAccountNumber()));
+        }
+        if (account.getOpenDate() == null) {
+            account.setOpenDate(java.time.LocalDate.now());
         }
         return accountRepository.save(account);
     }
 
-    // 删除账户
     @Override
     public boolean deleteAccount(Long accountId) {
         if (accountRepository.existsById(accountId)) {
@@ -56,7 +83,6 @@ public class AccountServiceImpl implements AccountService {
         return false;
     }
 
-    // 按账户id修改
     @Override
     public Account updateAccountById(Long accountId, Account account) {
         Account acc = accountRepository.findById(accountId).orElse(null);
@@ -72,7 +98,11 @@ public class AccountServiceImpl implements AccountService {
         return null;
     }
 
-    // 按用户名查找账户，解密后赋值明文银行卡号
+    @Override
+    public Account getAccountByCustomerId(Long customerId) {
+        return accountRepository.findByCustomerId(customerId).orElse(null);
+    }
+
     @Override
     public Account getAccountByUsername(String username) {
         Customer customer = customerRepository.findByName(username).orElse(null);
@@ -84,7 +114,6 @@ public class AccountServiceImpl implements AccountService {
         return acc;
     }
 
-    // 按用户名修改账户（银行卡号加密后入库）
     @Override
     public Account updateAccountByUsername(String username, Account account) {
         Customer customer = customerRepository.findByName(username).orElse(null);
@@ -94,7 +123,6 @@ public class AccountServiceImpl implements AccountService {
             acc.setAccountType(account.getAccountType());
             acc.setStatus(account.getStatus());
             acc.setBalance(account.getBalance());
-            // 前端明文卡号传在 accountNumber 字段
             if (account.getAccountNumber() != null && !account.getAccountNumber().isEmpty()) {
                 acc.setEncryptedAccountNumber(IdNumberUtil.encryptIdNumber(account.getAccountNumber()));
             }
@@ -118,7 +146,6 @@ public class AccountServiceImpl implements AccountService {
         return "";
     }
 
-    // 存款
     @Override
     @Transactional
     public boolean deposit(Long accountId, Double amount, String type, String description) {
@@ -129,7 +156,7 @@ public class AccountServiceImpl implements AccountService {
 
         Transaction txn = new Transaction();
         txn.setAccountId(accountId);
-        txn.setType(type); // 活期/定期存款
+        txn.setType(type);
         txn.setAmount(amount);
         txn.setBalanceAfter(acc.getBalance());
         txn.setDescription(description);
@@ -138,7 +165,6 @@ public class AccountServiceImpl implements AccountService {
         return true;
     }
 
-    // 取款
     @Override
     @Transactional
     public boolean withdraw(Long accountId, Double amount, String description) {
@@ -159,7 +185,6 @@ public class AccountServiceImpl implements AccountService {
         return true;
     }
 
-    // 转账
     @Override
     @Transactional
     public boolean transfer(Long fromAccountId, Long toAccountId, Double amount, String description) {
@@ -194,23 +219,14 @@ public class AccountServiceImpl implements AccountService {
         return true;
     }
 
-    // 查询交易记录
     @Override
     public List<Transaction> getTransactionHistory(Long accountId) {
         return transactionRepository.findByAccountIdOrderByTransactionTimeDesc(accountId);
     }
 
     @Override
-    public Account getAccountByCustomerId(Long customerId) {
-        // 假设每个客户只有一个主账户，如果有多个账户可自行调整为返回List<Account>
-        return accountRepository.findByCustomerId(customerId).orElse(null);
-    }
-
-    // 新增：直接用人脸图片识别用户（返回用户名或userId）
-    @Override
     public String recognizeFace(String faceImage) {
         return faceRecognitionService.recognize(faceImage);
     }
-
 
 }
