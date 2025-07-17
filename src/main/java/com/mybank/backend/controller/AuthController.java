@@ -30,8 +30,13 @@ public class AuthController {
         String base64Image = payload.get("image");
         String username = faceRecognitionService.recognize(base64Image); // 需确保返回用户名
         if (username != null) {
-            String token = jwtUtil.generateToken(username);
-            return ResponseEntity.ok(Map.of("token", token));
+            Optional<User> userOpt = userRepository.findByUsername(username);
+            if (userOpt.isPresent()) {
+                String token = jwtUtil.generateToken(username, userOpt.get().getRole());
+                return ResponseEntity.ok(Map.of("token", token, "role", userOpt.get().getRole()));
+            } else {
+                return ResponseEntity.ok(Map.of("error", "用户不存在"));
+            }
         } else {
             return ResponseEntity.ok(Map.of("error", "人脸识别失败"));
         }
@@ -49,10 +54,11 @@ public class AuthController {
             String dbPassword = optionalUser.get().getPassword();
             boolean matchResult = passwordEncoder.matches(password, dbPassword);
             if (matchResult) {
-                String token = jwtUtil.generateToken(username);
+                String role = optionalUser.get().getRole();
+                String token = jwtUtil.generateToken(username, role); // 生成带role的token
                 res.put("token", token);
                 res.put("username", username);
-                res.put("role", optionalUser.get().getRole()); // 返回role
+                res.put("role", role); // 返回role
             } else {
                 res.put("error", "用户名或密码错误");
             }

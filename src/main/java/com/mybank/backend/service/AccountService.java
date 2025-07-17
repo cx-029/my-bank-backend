@@ -21,4 +21,11 @@ public interface AccountService {
 
     // 新增：直接用人脸图片识别用户（返回用户名或userId）
     String recognizeFace(String faceImage);
+    List<Account> getAllAccounts();
+    // 新增
+    Account addAccount(Account account);
+    // 删除
+    boolean deleteAccount(Long accountId);
+    // 按账户id修改
+    Account updateAccountById(Long accountId, Account account);
 }

@@ -18,4 +18,10 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
 
     // 可扩展：银行卡号查找（加密后字段，实际场景需谨慎使用）
     Optional<Account> findByEncryptedAccountNumber(String encryptedAccountNumber);
+
+    List<Account> findAll();
+    // 查询所有账户
+    Optional<Account> findById(Long id);
+    // 按账户id查找
+    void deleteById(Long id);          // 删除账户
 }

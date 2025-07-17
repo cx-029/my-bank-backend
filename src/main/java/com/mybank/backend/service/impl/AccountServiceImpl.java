@@ -31,6 +31,47 @@ public class AccountServiceImpl implements AccountService {
     @Autowired
     private FaceRecognitionService faceRecognitionService;
 
+    @Override
+    public List<Account> getAllAccounts() {
+        return accountRepository.findAll();
+    }
+
+    // 新增账户
+    @Override
+    public Account addAccount(Account account) {
+        // 加密银行卡号
+        if (account.getAccountNumber() != null && !account.getAccountNumber().isEmpty()) {
+            account.setEncryptedAccountNumber(IdNumberUtil.encryptIdNumber(account.getAccountNumber()));
+        }
+        return accountRepository.save(account);
+    }
+
+    // 删除账户
+    @Override
+    public boolean deleteAccount(Long accountId) {
+        if (accountRepository.existsById(accountId)) {
+            accountRepository.deleteById(accountId);
+            return true;
+        }
+        return false;
+    }
+
+    // 按账户id修改
+    @Override
+    public Account updateAccountById(Long accountId, Account account) {
+        Account acc = accountRepository.findById(accountId).orElse(null);
+        if (acc != null) {
+            acc.setAccountType(account.getAccountType());
+            acc.setStatus(account.getStatus());
+            acc.setBalance(account.getBalance());
+            if (account.getAccountNumber() != null && !account.getAccountNumber().isEmpty()) {
+                acc.setEncryptedAccountNumber(IdNumberUtil.encryptIdNumber(account.getAccountNumber()));
+            }
+            return accountRepository.save(acc);
+        }
+        return null;
+    }
+
     // 按用户名查找账户，解密后赋值明文银行卡号
     @Override
     public Account getAccountByUsername(String username) {
@@ -170,4 +211,6 @@ public class AccountServiceImpl implements AccountService {
     public String recognizeFace(String faceImage) {
         return faceRecognitionService.recognize(faceImage);
     }
+
+
 }

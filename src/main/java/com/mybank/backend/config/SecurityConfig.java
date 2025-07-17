@@ -45,6 +45,8 @@ public class SecurityConfig {
                                 "/api/users/face-login",
                                 "/avatar/**"
                         ).permitAll()
+                        // 只允许ROLE_ADMIN访问
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);

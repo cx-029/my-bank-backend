@@ -3,12 +3,16 @@ package com.mybank.backend.entity;
 import java.time.LocalDate;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Transient;
 
 @Entity
 public class Account {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // ★添加这行
     private Long id;
+
     private Long customerId;
     private String accountType;
     private String encryptedAccountNumber; // 加密后的银行卡号

@@ -20,10 +20,13 @@ public class CustomUserDetailsServiceImpl implements CustomUserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("用户名不存在"));
+        // role字段需和Spring Security权限一致（ROLE_ADMIN/ROLE_CUSTOMER）
+        String role = user.getRole();
+        if (role == null) role = "customer";
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(),
                 user.getPassword(),
-                Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + user.getRole()))
+                Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()))
         );
     }
 }
