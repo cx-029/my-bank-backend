@@ -13,8 +13,8 @@ public class AdminAccountController {
     @Autowired
     private AccountService accountService;
 
-    // 分页+多条件查询
-    @GetMapping
+    // 分页+多条件查询（加上 /page，和客户管理风格一致）
+    @GetMapping("/page")
     public Page<Account> queryAccounts(
             @RequestParam(required = false) Long id,
             @RequestParam(required = false) Long customerId,
