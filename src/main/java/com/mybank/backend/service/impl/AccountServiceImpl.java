@@ -49,7 +49,9 @@ public class AccountServiceImpl implements AccountService {
             }
             return cb.and(predicates.toArray(new Predicate[0]));
         };
-        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "id"));
+        // 修正分页参数，确保不会小于0
+        int pageIndex = page > 0 ? page - 1 : 0;
+        Pageable pageable = PageRequest.of(pageIndex, size, Sort.by(Sort.Direction.DESC, "id"));
         return accountRepository.findAll(spec, pageable);
     }
 
