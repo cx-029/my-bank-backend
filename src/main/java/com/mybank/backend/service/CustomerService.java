@@ -1,12 +1,14 @@
 package com.mybank.backend.service;
 
 import com.mybank.backend.entity.Customer;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
 
 /**
- * 客户服务接口，只保留方法声明，去除静态加密/解密实现（已移到工具类）。
+ * 客户服务接口
  */
 public interface CustomerService {
 
@@ -21,4 +23,11 @@ public interface CustomerService {
     Optional<Customer> getCustomerByUserId(Long userId);
 
     void deleteCustomer(Long id);
+
+    // 新增分页方法
+    Page<Customer> getAllCustomersPaged(Pageable pageable);
+
+    Page<Customer> findByNameLike(String name, Pageable pageable);
+
+    Page<Customer> findByIdPaged(Long id, Pageable pageable);
 }
