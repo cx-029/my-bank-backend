@@ -68,4 +68,9 @@ public class CustomerServiceImpl implements CustomerService {
             return new PageImpl<>(List.of(), pageable, 0);
         }
     }
+
+    @Override
+    public long getCustomerCount() {
+        return customerRepository.count();
+    }
 }

@@ -20,6 +20,12 @@ public class AdminAccountLossReportController {
     @Autowired
     private AccountRepository accountRepository;
 
+    // 新增接口
+    @GetMapping("/count")
+    public long getPendingLossCount() {
+        return lossReportService.countLatestByStatus("待处理"); // "待处理"为你系统的待审批状态
+    }
+
     // 分页查询挂失记录，保证最新的挂失记录在最前面（createdAt倒序）
     @GetMapping("/list")
     public Page<AccountLossReport> list(

@@ -23,4 +23,6 @@ public interface AccountLossReportService {
 
     // 查询某账户最新一次挂失记录
     AccountLossReport findLatestByAccountId(Long accountId);
+
+    long countLatestByStatus(String status);
 }

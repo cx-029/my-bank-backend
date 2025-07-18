@@ -109,4 +109,9 @@ public class AccountLossReportServiceImpl implements AccountLossReportService {
         List<AccountLossReport> list = lossReportRepository.findByAccountIdOrderByCreatedAtDesc(accountId);
         return list.isEmpty() ? null : list.get(0);
     }
+
+    @Override
+    public long countLatestByStatus(String status) {
+        return lossReportRepository.countLatestByStatus(status);
+    }
 }

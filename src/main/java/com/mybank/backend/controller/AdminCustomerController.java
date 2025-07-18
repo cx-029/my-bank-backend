@@ -12,6 +12,11 @@ public class AdminCustomerController {
     @Autowired
     private CustomerService customerService;
 
+    @GetMapping("/count")
+    public long getCustomerCount() {
+        return customerService.getCustomerCount();
+    }
+
     // 分页+模糊/精确查询
     @GetMapping("/page")
     public Page<Customer> getCustomersPage(
