@@ -22,4 +22,4 @@ public class Notification {
     private Date createdAt;
 
     private String author;
-}
+}//

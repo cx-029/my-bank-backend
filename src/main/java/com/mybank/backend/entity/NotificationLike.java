@@ -16,4 +16,4 @@ public class NotificationLike {
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
-}
+}//
