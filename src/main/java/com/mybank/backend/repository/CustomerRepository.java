@@ -13,4 +13,10 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
 
     // 分页模糊姓名
     Page<Customer> findByNameContaining(String name, Pageable pageable);
+
+    // 分页模糊手机号
+    Page<Customer> findByPhoneContaining(String phone, Pageable pageable);
+
+    // 分页模糊姓名和手机号
+    Page<Customer> findByNameContainingAndPhoneContaining(String name, String phone, Pageable pageable);
 }
