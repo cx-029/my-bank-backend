@@ -2,12 +2,13 @@ package com.mybank.backend.repository;
 
 import com.mybank.backend.entity.NotificationComment;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
-public interface NotificationCommentRepository extends JpaRepository<NotificationComment, Long> {
+public interface NotificationCommentRepository extends JpaRepository<NotificationComment, Long>, JpaSpecificationExecutor<NotificationComment> {
     List<NotificationComment> findByNotificationIdAndDeleted(Long notificationId, Integer deleted);
 
     List<NotificationComment> findByParentIdAndDeleted(Long parentId, Integer deleted);
