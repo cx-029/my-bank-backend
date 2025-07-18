@@ -23,13 +23,18 @@ public class AdminCustomerController {
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String name,
+            @RequestParam(required = false) String phone,
             @RequestParam(required = false) Long id
     ) {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "id"));
-        if (name != null && !name.isEmpty()) {
-            return customerService.findByNameLike(name, pageable);
-        } else if (id != null) {
+        if (id != null) {
             return customerService.findByIdPaged(id, pageable);
+        } else if (name != null && !name.isEmpty() && phone != null && !phone.isEmpty()) {
+            return customerService.findByNameAndPhoneLike(name, phone, pageable);
+        } else if (name != null && !name.isEmpty()) {
+            return customerService.findByNameLike(name, pageable);
+        } else if (phone != null && !phone.isEmpty()) {
+            return customerService.findByPhoneLike(phone, pageable);
         }
         return customerService.getAllCustomersPaged(pageable);
     }

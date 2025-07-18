@@ -29,6 +29,10 @@ public interface CustomerService {
 
     Page<Customer> findByNameLike(String name, Pageable pageable);
 
+    Page<Customer> findByPhoneLike(String phone, Pageable pageable);
+
+    Page<Customer> findByNameAndPhoneLike(String name, String phone, Pageable pageable);
+
     Page<Customer> findByIdPaged(Long id, Pageable pageable);
 
     long getCustomerCount();
