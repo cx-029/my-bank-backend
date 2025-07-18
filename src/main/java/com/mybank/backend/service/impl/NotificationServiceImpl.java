@@ -9,6 +9,7 @@ import com.mybank.backend.repository.NotificationCommentRepository;
 import com.mybank.backend.repository.NotificationLikeRepository;
 import com.mybank.backend.repository.NotificationRepository;
 import com.mybank.backend.service.NotificationService;
+import jakarta.persistence.criteria.Predicate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +19,8 @@ import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
+
 
 @Service
 public class NotificationServiceImpl implements NotificationService {
@@ -174,6 +177,20 @@ public class NotificationServiceImpl implements NotificationService {
         old.setImageUrl(notification.getImageUrl());
         // 可加其他字段更新
         return notificationRepository.save(old);
+    }
+
+    @Override
+    public Page<Notification> getNotificationsPaged(Pageable pageable, String title, String author) {
+        return notificationRepository.findAll((root, query, cb) -> {
+            Predicate p = cb.conjunction();
+            if (title != null && !title.isEmpty()) {
+                p = cb.and(p, cb.like(root.get("title"), "%" + title + "%"));
+            }
+            if (author != null && !author.isEmpty()) {
+                p = cb.and(p, cb.like(root.get("author"), "%" + author + "%"));
+            }
+            return p;
+        }, pageable);
     }
 
     @Override

@@ -31,4 +31,5 @@ public interface NotificationService {
     Notification saveNotification(Notification notification);
     Notification updateNotification(Notification notification);
     boolean deleteNotification(Long id);
+    Page<Notification> getNotificationsPaged(Pageable pageable, String title, String author);
 }

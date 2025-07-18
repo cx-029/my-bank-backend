@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.Date;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin/notifications")
@@ -17,13 +16,15 @@ public class AdminNotificationController {
     @Autowired
     private NotificationService notificationService;
 
-    // 分页查询通知
+    // 分页+条件查询通知，参数都可选
     @GetMapping
     public Page<Notification> listNotifications(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) String author) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        return notificationService.getNotificationsPaged(pageable);
+        return notificationService.getNotificationsPaged(pageable, title, author);
     }
 
     // 创建通知
