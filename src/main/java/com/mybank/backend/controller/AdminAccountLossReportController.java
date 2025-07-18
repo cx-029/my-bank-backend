@@ -46,7 +46,7 @@ public class AdminAccountLossReportController {
         }
     }
 
-    // 挂失审批（挂失、冻结、销户、正常），加限制
+    // 挂失审批（挂失、冻结、销户、正常），加限制，并同步所有该账户挂失记录和账户状态
     @PostMapping("/approve")
     public String approve(@RequestParam Long reportId, @RequestParam String action) {
         AccountLossReport report = lossReportService.findById(reportId);
@@ -64,28 +64,21 @@ public class AdminAccountLossReportController {
             return "只能操作该账户最后一次挂失记录";
         }
 
+        String status;
         switch (action) {
-            case "挂失":
-                account.setStatus("挂失");
-                report.setStatus("挂失");
-                break;
-            case "冻结":
-                account.setStatus("冻结");
-                report.setStatus("冻结");
-                break;
-            case "销户":
-                account.setStatus("销户");
-                report.setStatus("销户");
-                break;
-            case "正常":
-                account.setStatus("正常");
-                report.setStatus("正常");
-                break;
-            default:
-                return "非法操作";
+            case "挂失": status = "挂失"; break;
+            case "冻结": status = "冻结"; break;
+            case "销户": status = "销户"; break;
+            case "正常": status = "正常"; break;
+            default: return "非法操作";
         }
+        // 1. 同步账户状态
+        account.setStatus(status);
         accountRepository.save(account);
-        lossReportService.save(report);
+
+        // 2. 同步所有该账户的挂失记录状态
+        lossReportService.updateAllReportsStatusByAccount(account.getId(), status);
+
         return "操作成功";
     }
 
@@ -95,7 +88,7 @@ public class AdminAccountLossReportController {
         lossReportService.deleteById(id);
     }
 
-    // 修改挂失记录（只能改最后一次挂失记录，且accountId等不可改）
+    // 修改挂失记录（只能改最后一次挂失记录，且accountId等不可改），并同步所有该账户挂失记录和账户状态
     @PutMapping("/{id}")
     public AccountLossReport update(@PathVariable Long id, @RequestBody AccountLossReport report) {
         AccountLossReport old = lossReportService.findById(id);
@@ -105,13 +98,21 @@ public class AdminAccountLossReportController {
         if (latest == null || !latest.getId().equals(id)) {
             throw new RuntimeException("只能修改该账户最后一次挂失记录");
         }
-        old.setStatus(report.getStatus());
+        String newStatus = report.getStatus();
+        old.setStatus(newStatus);
         old.setReason(report.getReason());
         // 修改类型和处理时间
-        if (!"挂失".equals(report.getStatus())) { // 处理完成
+        if (!"挂失".equals(newStatus)) { // 处理完成
             old.setType("已处理");
             old.setResolvedAt(java.time.LocalDateTime.now());
         }
+        Account account = accountRepository.findById(old.getAccountId()).orElse(null);
+        if (account != null) {
+            account.setStatus(newStatus);
+            accountRepository.save(account);
+        }
+        // 同步所有该账户挂失记录
+        lossReportService.updateAllReportsStatusByAccount(old.getAccountId(), newStatus);
         return lossReportService.save(old);
     }
 }

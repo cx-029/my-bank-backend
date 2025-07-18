@@ -114,4 +114,14 @@ public class AccountLossReportServiceImpl implements AccountLossReportService {
     public long countLatestByStatus(String status) {
         return lossReportRepository.countLatestByStatus(status);
     }
+
+    @Override
+    @Transactional
+    public void updateAllReportsStatusByAccount(Long accountId, String status) {
+        List<AccountLossReport> reports = lossReportRepository.findByAccountId(accountId);
+        for (AccountLossReport report : reports) {
+            report.setStatus(status);
+        }
+        lossReportRepository.saveAll(reports);
+    }
 }
