@@ -27,13 +27,13 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public Optional<Customer> getCustomerByUserId(Long userId) {
-        return customerRepository.findByUserId(userId);
+    public Optional<Customer> getCustomerByName(String name) {
+        return customerRepository.findByName(name);
     }
 
     @Override
-    public Optional<Customer> getCustomerByName(String name) {
-        return customerRepository.findByName(name);
+    public Optional<Customer> getCustomerByUserId(Long userId) {
+        return customerRepository.findByUserId(userId);
     }
 
     @Override
@@ -56,6 +56,18 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public Page<Customer> findByNameLike(String name, Pageable pageable) {
         return customerRepository.findByNameContaining(name, pageable);
+    }
+
+    // 分页模糊查询手机号
+    @Override
+    public Page<Customer> findByPhoneLike(String phone, Pageable pageable) {
+        return customerRepository.findByPhoneContaining(phone, pageable);
+    }
+
+    // 分页模糊查询姓名和手机号
+    @Override
+    public Page<Customer> findByNameAndPhoneLike(String name, String phone, Pageable pageable) {
+        return customerRepository.findByNameContainingAndPhoneContaining(name, phone, pageable);
     }
 
     // 分页精确查id（一般只返回一个）
