@@ -45,4 +45,4 @@ public class Admin {
     public void setPhotoUrl(String photoUrl) { this.photoUrl = photoUrl; }
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
-}
+}//
