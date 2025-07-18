@@ -16,13 +16,14 @@ public interface AccountLossReportService {
     AccountLossReport save(AccountLossReport report);
     void deleteById(Long id);
 
-    // 用于controller条件分页查询
     Page<AccountLossReport> findByAccountIdAndStatus(Long accountId, String status, Pageable pageable);
     Page<AccountLossReport> findByAccountId(Long accountId, Pageable pageable);
     Page<AccountLossReport> findByStatus(String status, Pageable pageable);
 
-    // 查询某账户最新一次挂失记录
     AccountLossReport findLatestByAccountId(Long accountId);
 
     long countLatestByStatus(String status);
+
+    // 新增，批量同步某账户所有挂失记录状态
+    void updateAllReportsStatusByAccount(Long accountId, String status);
 }
