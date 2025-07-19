@@ -36,4 +36,6 @@ public interface CustomerService {
     Page<Customer> findByIdPaged(Long id, Pageable pageable);
 
     long getCustomerCount();
+
+    Long findCustomerIdByUsername(String username);
 }

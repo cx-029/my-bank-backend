@@ -1,7 +1,9 @@
 package com.mybank.backend.service.impl;
 
 import com.mybank.backend.entity.Customer;
+import com.mybank.backend.entity.User;
 import com.mybank.backend.repository.CustomerRepository;
+import com.mybank.backend.repository.UserRepository;
 import com.mybank.backend.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
@@ -15,6 +17,8 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Autowired
     private CustomerRepository customerRepository;
+    @Autowired
+    private UserRepository userRepository;
 
     @Override
     public List<Customer> getAllCustomers() {
@@ -84,5 +88,17 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public long getCustomerCount() {
         return customerRepository.count();
+    }
+
+    @Override
+    public Long findCustomerIdByUsername(String username) {
+        // 你的User表应有username唯一，Customer表有userId外键（Long类型）
+        // 1. 查User
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("用户不存在"));
+        // 2. 查Customer
+        Optional<Customer> customerOpt = customerRepository.findByUserId(user.getId());
+        if (customerOpt.isEmpty()) throw new RuntimeException("客户不存在");
+        return customerOpt.get().getId();
     }
 }
