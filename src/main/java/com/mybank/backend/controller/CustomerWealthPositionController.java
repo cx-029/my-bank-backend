@@ -17,22 +17,21 @@ public class CustomerWealthPositionController {
     @Autowired
     private CustomerService customerService;
 
-    // 申购
+    // 申购接口：只接收productId和amount，customerId从后端获取
     @PostMapping("/purchase")
-    public CustomerWealthPosition purchase(@RequestParam Long customerId,
-                                           @RequestParam Long productId,
-                                           @RequestParam Double amount) {
-        return positionService.purchase(customerId, productId, amount);
+    public CustomerWealthPosition purchase(@RequestBody CustomerWealthPosition position) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        Long customerId = customerService.findCustomerIdByUsername(username);
+        return positionService.purchase(customerId, position.getProductId(), position.getAmount());
     }
 
     // 赎回
     @PostMapping("/redeem")
-    public CustomerWealthPosition redeem(@RequestParam Long positionId,
-                                         @RequestParam Double amount) {
-        return positionService.redeem(positionId, amount);
+    public CustomerWealthPosition redeem(@RequestBody CustomerWealthPosition position) {
+        return positionService.redeem(position.getId(), position.getAmount());
     }
 
-    // 查询当前登录客户所有持仓（不允许传customerId）
+    // 查询当前登录客户所有持仓
     @GetMapping("/my")
     public List<CustomerWealthPosition> myPositions() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();

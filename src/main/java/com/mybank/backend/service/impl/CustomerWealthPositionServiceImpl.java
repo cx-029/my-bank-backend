@@ -24,13 +24,11 @@ public class CustomerWealthPositionServiceImpl implements CustomerWealthPosition
 
     @Override
     public CustomerWealthPosition purchase(Long customerId, Long productId, Double amount) {
-        // 校验产品及申购金额
         Optional<WealthProduct> op = productRepository.findById(productId);
         if (op.isEmpty()) throw new RuntimeException("理财产品不存在");
         WealthProduct product = op.get();
         if (amount < product.getMinAmount()) throw new RuntimeException("申购金额低于最低起购额");
 
-        // 新建持仓
         CustomerWealthPosition position = new CustomerWealthPosition();
         position.setCustomerId(customerId);
         position.setProductId(productId);
@@ -41,7 +39,6 @@ public class CustomerWealthPositionServiceImpl implements CustomerWealthPosition
         position.setExpectedIncome(amount * (product.getInterestRate() != null ? product.getInterestRate() : 0));
         CustomerWealthPosition saved = positionRepository.save(position);
 
-        // 记一条申购交易明细
         WealthProductTransaction tx = new WealthProductTransaction();
         tx.setPositionId(saved.getId());
         tx.setTradeType("申购");
@@ -59,7 +56,6 @@ public class CustomerWealthPositionServiceImpl implements CustomerWealthPosition
         CustomerWealthPosition position = op.get();
         if (amount > position.getAmount()) throw new RuntimeException("赎回金额超出持仓可用额度");
 
-        // 更新持仓
         position.setAmount(position.getAmount() - amount);
         if (position.getAmount() <= 0) {
             position.setStatus("已赎回");
@@ -67,7 +63,6 @@ public class CustomerWealthPositionServiceImpl implements CustomerWealthPosition
         position.setLatestUpdate(LocalDateTime.now());
         CustomerWealthPosition saved = positionRepository.save(position);
 
-        // 记一条赎回交易明细
         WealthProductTransaction tx = new WealthProductTransaction();
         tx.setPositionId(positionId);
         tx.setTradeType("赎回");
