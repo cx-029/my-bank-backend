@@ -32,6 +32,7 @@ public class CustomerWealthPositionServiceImpl implements CustomerWealthPosition
         CustomerWealthPosition position = new CustomerWealthPosition();
         position.setCustomerId(customerId);
         position.setProductId(productId);
+        position.setProductName(product.getName()); // 新增：写入产品名称
         position.setAmount(amount);
         position.setPurchaseDate(LocalDateTime.now());
         position.setStatus("持有");
@@ -48,6 +49,8 @@ public class CustomerWealthPositionServiceImpl implements CustomerWealthPosition
 
         return saved;
     }
+
+
 
     @Override
     public CustomerWealthPosition redeem(Long positionId, Double amount) {

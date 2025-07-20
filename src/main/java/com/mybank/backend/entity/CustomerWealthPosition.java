@@ -16,8 +16,10 @@ public class CustomerWealthPosition {
     private String status;
     private LocalDateTime purchaseDate;
     private LocalDateTime latestUpdate;
+    private String productName;
 
-    // getter/setter
+    public String getProductName() { return productName; }
+    public void setProductName(String productName) { this.productName = productName; }
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public Long getCustomerId() { return customerId; }
