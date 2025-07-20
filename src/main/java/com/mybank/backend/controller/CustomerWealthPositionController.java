@@ -8,6 +8,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/wealth/position")
@@ -17,7 +18,18 @@ public class CustomerWealthPositionController {
     @Autowired
     private CustomerService customerService;
 
-    // 申购接口：只接收productId和amount，customerId从后端获取
+    // DTO写在controller内部且为public
+    public static class RedeemRequest {
+        private Long id;
+        private Double amount;
+
+        public Long getId() { return id; }
+        public void setId(Long id) { this.id = id; }
+        public Double getAmount() { return amount; }
+        public void setAmount(Double amount) { this.amount = amount; }
+    }
+
+    // 申购接口
     @PostMapping("/purchase")
     public CustomerWealthPosition purchase(@RequestBody CustomerWealthPosition position) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -25,10 +37,10 @@ public class CustomerWealthPositionController {
         return positionService.purchase(customerId, position.getProductId(), position.getAmount());
     }
 
-    // 赎回
+    // 赎回接口
     @PostMapping("/redeem")
-    public CustomerWealthPosition redeem(@RequestBody CustomerWealthPosition position) {
-        return positionService.redeem(position.getId(), position.getAmount());
+    public Map<String, Object> redeem(@RequestBody RedeemRequest req) {
+        return positionService.redeemWithProfit(req.getId(), req.getAmount());
     }
 
     // 查询当前登录客户所有持仓
