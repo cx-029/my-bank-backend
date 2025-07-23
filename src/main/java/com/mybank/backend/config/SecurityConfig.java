@@ -77,6 +77,12 @@ public class SecurityConfig {
         @Override
         protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
                 throws ServletException, IOException {
+            String path = request.getServletPath();
+            // 排除登录和人脸登录接口，直接放行
+            if ("/api/auth/login".equals(path) || "/api/auth/face-login".equals(path)) {
+                filterChain.doFilter(request, response);
+                return;
+            }
             String token = request.getHeader("Authorization");
             if (token != null && token.startsWith("Bearer ")) {
                 token = token.substring(7);
