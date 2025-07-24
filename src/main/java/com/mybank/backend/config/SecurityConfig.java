@@ -18,6 +18,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
@@ -43,9 +45,9 @@ public class SecurityConfig {
                                 "/api/users/login",
                                 "/api/users/register",
                                 "/api/users/face-login",
-                                "/avatar/**"
+                                "/avatar/**",
+                                "/api/main/analysis/summary" // 放行主服务的接口路径
                         ).permitAll()
-                        // 只允许ROLE_ADMIN访问
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
@@ -68,6 +70,7 @@ public class SecurityConfig {
     public static class JwtAuthenticationFilter extends OncePerRequestFilter {
         private final JwtUtil jwtUtil;
         private final CustomUserDetailsService userDetailsService;
+        private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
         public JwtAuthenticationFilter(JwtUtil jwtUtil, CustomUserDetailsService userDetailsService) {
             this.jwtUtil = jwtUtil;
@@ -78,22 +81,36 @@ public class SecurityConfig {
         protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
                 throws ServletException, IOException {
             String path = request.getServletPath();
-            // 排除登录和人脸登录接口，直接放行
-            if ("/api/auth/login".equals(path) || "/api/auth/face-login".equals(path)) {
+            logger.debug("接收到请求: {}", path);
+
+            // 跳过主服务和微服务之间的接口路径
+            if ("/api/main/analysis/summary".equals(path)) {
+                logger.debug("跳过 JWT 验证: {}", path);
                 filterChain.doFilter(request, response);
                 return;
             }
+
             String token = request.getHeader("Authorization");
             if (token != null && token.startsWith("Bearer ")) {
-                token = token.substring(7);
-                String username = jwtUtil.getUsernameFromToken(token);
-                if (username != null && jwtUtil.validateToken(token)) {
-                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                    UsernamePasswordAuthenticationToken authToken =
-                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                logger.debug("发现 Authorization Header: {}", token);
+                try {
+                    token = token.substring(7);
+                    String username = jwtUtil.getUsernameFromToken(token);
+                    logger.debug("从 Token 中解析出的用户名: {}", username);
+                    if (username != null && jwtUtil.validateToken(token)) {
+                        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                        logger.debug("加载用户信息成功: {}", userDetails.getUsername());
+                        UsernamePasswordAuthenticationToken authToken =
+                                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                        SecurityContextHolder.getContext().setAuthentication(authToken);
+                    }
+                } catch (Exception e) {
+                    logger.error("JWT解析失败: {}", e.getMessage());
                 }
+            } else {
+                logger.debug("未发现 Authorization Header 或格式不正确");
             }
+
             filterChain.doFilter(request, response);
         }
     }
