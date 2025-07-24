@@ -38,4 +38,8 @@ public interface CustomerService {
     long getCustomerCount();
 
     Long findCustomerIdByUsername(String username);
+
+    // === 新增方法：通过 customerId 查找 accountId ===
+    Long findAccountIdByCustomerId(Long customerId);
+    // === 新增代码结束 ===
 }

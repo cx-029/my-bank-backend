@@ -2,6 +2,7 @@ package com.mybank.backend.controller;
 
 import com.mybank.backend.entity.User;
 import com.mybank.backend.repository.UserRepository;
+import com.mybank.backend.service.CustomerService;
 import com.mybank.backend.service.FaceRecognitionService;
 import com.mybank.backend.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,12 +24,15 @@ public class AuthController {
     @Autowired
     private PasswordEncoder passwordEncoder;
     @Autowired
+    private CustomerService customerService;
+    @Autowired
     private FaceRecognitionService faceRecognitionService;
 
     @PostMapping("/face-login")
     public ResponseEntity<?> faceLogin(@RequestBody Map<String, String> payload) {
         String base64Image = payload.get("image");
-        String username = faceRecognitionService.recognize(base64Image); // 需确保返回用户名
+        // 原有代码保持不变
+        String username = faceRecognitionService.recognize(base64Image);
         if (username != null) {
             Optional<User> userOpt = userRepository.findByUsername(username);
             if (userOpt.isPresent()) {
@@ -59,6 +63,16 @@ public class AuthController {
                 res.put("token", token);
                 res.put("username", username);
                 res.put("role", role); // 返回role
+
+                // === 新增代码：查询 accountId ===
+                Long userId = optionalUser.get().getId();
+                Long customerId = customerService.getCustomerByUserId(userId)
+                        .map(customer -> customer.getId())
+                        .orElse(null);
+                Long accountId = (customerId != null) ? customerService.findAccountIdByCustomerId(customerId) : null;
+                res.put("accountId", accountId); // 返回 accountId
+                // === 新增代码结束 ===
+
             } else {
                 res.put("error", "用户名或密码错误");
             }

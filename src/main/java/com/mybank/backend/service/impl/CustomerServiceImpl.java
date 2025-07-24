@@ -1,7 +1,9 @@
 package com.mybank.backend.service.impl;
 
+import com.mybank.backend.entity.Account;
 import com.mybank.backend.entity.Customer;
 import com.mybank.backend.entity.User;
+import com.mybank.backend.repository.AccountRepository;
 import com.mybank.backend.repository.CustomerRepository;
 import com.mybank.backend.repository.UserRepository;
 import com.mybank.backend.service.CustomerService;
@@ -19,6 +21,8 @@ public class CustomerServiceImpl implements CustomerService {
     private CustomerRepository customerRepository;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private AccountRepository accountRepository;
 
     @Override
     public List<Customer> getAllCustomers() {
@@ -101,4 +105,13 @@ public class CustomerServiceImpl implements CustomerService {
         if (customerOpt.isEmpty()) throw new RuntimeException("客户不存在");
         return customerOpt.get().getId();
     }
+
+    // === 新增方法：通过 customerId 查找 accountId ===
+    @Override
+    public Long findAccountIdByCustomerId(Long customerId) {
+        return accountRepository.findByCustomerId(customerId)
+                .map(Account::getId)
+                .orElse(null);
+    }
+    // === 新增代码结束 ===
 }
