@@ -16,9 +16,6 @@ public class RecommendationServiceImpl implements RecommendationService {
     @Autowired
     private WealthProductRepository wealthProductRepository;
 
-    @Autowired
-    private RestTemplate restTemplate; // 注入 RestTemplate，用于调用微服务
-
     private static final String FINANCIAL_ANALYSIS_URL = "http://localhost:8081/api/analysis/summary";
 
     @Override
@@ -48,7 +45,7 @@ public class RecommendationServiceImpl implements RecommendationService {
     private Map<String, Object> fetchFinancialAnalysis(Long accountId) {
         try {
             // 调用微服务接口，传递账户 ID 获取数据
-            return restTemplate.getForObject(
+            return new RestTemplate().getForObject(
                     FINANCIAL_ANALYSIS_URL + "?accountId=" + accountId, Map.class);
         } catch (Exception e) {
             // 处理调用失败的情况，返回默认数据或抛出异常
@@ -78,7 +75,7 @@ public class RecommendationServiceImpl implements RecommendationService {
                 .map(ProductMatch::getProduct)
                 .collect(Collectors.toList());
 
-        // 返回 1 个推荐产品
+        // 返回推荐产品
         return rankedProducts.stream().limit(3).collect(Collectors.toList());
     }
 

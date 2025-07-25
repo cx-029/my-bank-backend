@@ -45,6 +45,7 @@ public class SecurityConfig {
                                 "/api/users/login",
                                 "/api/users/register",
                                 "/api/users/face-login",
+                                "/api/ai/analysis",
                                 "/avatar/**",
                                 "/api/main/analysis/summary" // 放行主服务的接口路径
                         ).permitAll()
