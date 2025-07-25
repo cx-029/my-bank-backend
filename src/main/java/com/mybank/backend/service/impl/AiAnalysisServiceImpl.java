@@ -29,7 +29,8 @@ public class AiAnalysisServiceImpl implements AiAnalysisService {
      * 将 scores 转换为自然语言描述
      */
     private String buildQuestionWithScores(Map<String, Double> scores) {
-        StringBuilder question = new StringBuilder("以下是用户的财务评分数据：\n");
+        StringBuilder question = new StringBuilder("请扮演一位专业的智慧银行财富分析师，分析以下用户的财务状况并提供建议：\n\n");
+        question.append("### 用户财务评分数据：\n");
         question.append(String.format("1. 流动性评分：%.2f，表示您的资产流动性。\n", scores.getOrDefault("liquidityScore", 0.0)));
         question.append(String.format("2. 收入趋势评分：%.2f，表示您的收入增长趋势。\n", scores.getOrDefault("incomeTrendScore", 0.0)));
         question.append(String.format("3. 现金流评分：%.2f，表示您的现金流稳定性。\n", scores.getOrDefault("cashFlowScore", 0.0)));
@@ -37,7 +38,7 @@ public class AiAnalysisServiceImpl implements AiAnalysisService {
         question.append(String.format("5. 收入稳定性评分：%.2f，表示您的收入是否稳定。\n", scores.getOrDefault("incomeStabilityScore", 0.0)));
         question.append(String.format("6. 投资贡献评分：%.2f，表示投资对您财富的贡献。\n", scores.getOrDefault("investmentContributionScore", 0.0)));
         question.append(String.format("7. 支出增长趋势评分：%.2f，表示您的支出增长趋势。\n", scores.getOrDefault("expenseTrendScore", 0.0)));
-        question.append("\n请根据以上评分数据为用户提供个性化的理财建议。");
+        question.append("\n请根据以上评分数据和交易记录，分析用户的财务状况并提供个性化的理财建议。");
         return question.toString();
     }
 
