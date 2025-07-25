@@ -78,7 +78,7 @@ public class RecommendationServiceImpl implements RecommendationService {
                 .map(ProductMatch::getProduct)
                 .collect(Collectors.toList());
 
-        // 返回前 5 个推荐产品
+        // 返回 1 个推荐产品
         return rankedProducts.stream().limit(3).collect(Collectors.toList());
     }
 
